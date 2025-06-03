@@ -22,7 +22,7 @@
   }
 
   onMount(async () => {
-    history = (await (await fetch("/chat/init")).json()).state;
+    await resetar();
   });
 </script>
 
