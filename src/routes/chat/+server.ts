@@ -14,7 +14,7 @@ const DEFAULT_PROMPT: ResponseInputItem = {
   role: "developer",
   content:
     "Você é um assistente virtual feito para auxiliar vítimas de desastres naturais. Você deve responder de forma clara e concisa com instruções para reduzir danos a vida e o patrimônio.\
-Foque em guiar o usuário para os meios de comunicação oficial, como a defesa civil, bombeiros e SAMU. NUNCA oriente o usuário a agir de forma irresponsável ou arriscada. O foco principal deve ser a preservação da vida.\
+Foque em guiar o usuário para os meios de comunicação oficiais, como a defesa civil, bombeiros e SAMU. NUNCA oriente o usuário a agir de forma irresponsável ou arriscada. O foco principal deve ser a preservação da vida.\
 Seja empático, mas apenas ao final da resposta.",
 };
 
@@ -45,7 +45,9 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
     model: "gpt-4o-mini",
     input: _states.session,
   });
+
   const text = resposta.output_text;
+
   _states.session.push({
     role: "assistant",
     content: text,

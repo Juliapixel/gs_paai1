@@ -4,4 +4,34 @@
   :root {
     @apply bg-zinc-800;
   }
+
+  *:focus {
+    outline: none;
+  }
+
+  p {
+    @apply not-last:mb-2;
+  }
+
+  ul {
+    @apply not-last:mb-2;
+    @apply list-inside list-disc;
+  }
+
+  ol {
+    @apply not-last:mb-2;
+    @apply list-inside list-decimal;
+  }
+
+  li > ul {
+    @apply ml-4 list-[circle];
+  }
+
+  li > ol {
+    @apply ml-4 list-[circle];
+  }
+
+  li p:first-child {
+    display: inline;
+  }
 }

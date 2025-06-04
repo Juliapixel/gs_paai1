@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { marked } from "marked";
   import { onMount } from "svelte";
 
   let message = $state("");
@@ -6,8 +7,10 @@
   let history: { role: string; content: string }[] = $state([]);
   $inspect(history);
 
-  async function enviarMensagem() {
+  async function enviarMensagem(e: SubmitEvent) {
+    e.preventDefault();
     const tmp = message;
+    history.push({ role: "user", content: message });
     message = "";
     const resp = await fetch(
       "/chat?" + new URLSearchParams({ message: tmp }).toString(),
@@ -26,18 +29,21 @@
   });
 </script>
 
-<div class="flex flex-col items-center py-12">
-  <h1 class="py-4 text-2xl text-white">Assitente virtual para emergências</h1>
-  <div class="w-[50rem] rounded-t-xl border-1 bg-white p-4">
+<div class="mx-auto flex w-[95%] flex-col items-center py-12 lg:w-[50rem]">
+  <h1 class="ml-3 self-start py-4 text-2xl font-bold text-white">
+    Assitente virtual para desastres naturais
+  </h1>
+  <div class="w-full rounded-t-xl border-1 bg-white p-4">
     {#if history.length == 0}
-      <p>Como posso te ajudar?</p>
+      <p class="text-zinc-600">Como posso te ajudar?</p>
     {/if}
     {#each history.filter((msg) => msg.role != "developer") as msg}
-      <pre
-        class="border-zinc-300 py-2 whitespace-pre-wrap not-last:border-b">{msg.content}</pre>
+      <div class="border-zinc-300 py-2 not-last:border-b">
+        {@html marked(msg.content)}
+      </div>
     {/each}
   </div>
-  <div class="flex w-[50rem]">
+  <form onsubmit={enviarMensagem} class="flex w-full">
     <input
       class="w-full rounded-bl-xl border-1 bg-white p-4"
       type="text"
@@ -46,11 +52,19 @@
     />
     <button
       class="cursor-pointer border-1 bg-zinc-200 p-4"
-      onclick={() => resetar()}>Resetar</button
+      onclick={() => resetar()}>Reiniciar</button
     >
     <button
       class="cursor-pointer rounded-br-xl border-1 bg-zinc-200 p-4"
-      onclick={() => enviarMensagem()}>Enviar</button
+      type="submit">Enviar</button
     >
+  </form>
+  <div class="mt-8 self-start text-zinc-300">
+    <h1 class="text-lg">Créditos</h1>
+    <ul>
+      <li>Allan de Souza Cardoso - RM: 561721</li>
+      <li>Júlia Borges Paschoalinoto - RM: 564725</li>
+      <li>Lucas Werpp Franco - RM: 556044</li>
+    </ul>
   </div>
 </div>
