@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   _states.session.push({ role: "user", content: message });
 
   const resposta = await openai.responses.create({
-    model: "gpt-4.1-mini",
+    model: "gpt-4o-mini",
     input: _states.session,
   });
   const text = resposta.output_text;
