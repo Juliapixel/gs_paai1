@@ -1,4 +1,5 @@
 import { env } from "$env/dynamic/private";
+import { prompts, type PromptType } from "$lib";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import OpenAI from "openai";
 import type {
@@ -10,17 +11,7 @@ const openai = new OpenAI({
   apiKey: env.OPEN_AI_KEY,
 });
 
-const DEFAULT_PROMPT: ResponseInputItem = {
-  role: "developer",
-  content:
-    "Você é um assistente virtual feito para auxiliar vítimas de desastres naturais. Você deve responder de forma clara e concisa com instruções para reduzir danos a vida e o patrimônio.\
-Foque em guiar o usuário para os meios de comunicação oficiais, como a defesa civil, bombeiros e SAMU. NUNCA oriente o usuário a agir de forma irresponsável ou arriscada. O foco principal deve ser a preservação da vida.\
-Seja empático, mas apenas ao final da resposta.",
-};
-
-export let _states: Record<string, ResponseInput> = {};
-
-const DEFAULT: ResponseInput = [DEFAULT_PROMPT];
+let states: Record<string, ResponseInput> = {};
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
   const params = url.searchParams;
@@ -29,33 +20,40 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
     error(400);
   }
   let session = cookies.get("session");
+  const mode = (params.get("mode") as PromptType | undefined) ?? "role";
 
-  if (!session || _states.session === undefined) {
+  if (!session || states.session === undefined) {
     session = crypto.randomUUID();
     cookies.set("session", session, {
       path: "/",
       expires: new Date(Date.now() + 60 * 60 * 8 * 1000),
     });
-    _states.session = [DEFAULT_PROMPT];
+    states.session = [];
   }
 
-  _states.session.push({ role: "user", content: message });
+  states.session.push({ role: "user", content: message });
+  const sys_prompt = prompts[mode];
+  if (sys_prompt === undefined) {
+    error(400);
+  }
 
   const resposta = await openai.responses.create({
     model: "gpt-4o-mini",
-    input: _states.session,
+    input: [
+      { role: "developer", content: sys_prompt } as ResponseInputItem,
+    ].concat(states.session),
   });
 
   const text = resposta.output_text;
 
-  _states.session.push({
+  states.session.push({
     role: "assistant",
     content: text,
   });
 
-  console.log(_states.session);
+  console.log(states.session);
 
   return json({
-    state: _states.session,
+    state: states.session,
   });
 };
